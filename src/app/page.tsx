@@ -1,95 +1,72 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState, useEffect } from "react";
+import { Box, Button, Flex, Grid, Heading, Text } from "@radix-ui/themes";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [ws, setWs] = useState<WebSocket | null>(null);
+  const [lastCommand, setLastCommand] = useState("None");
+  const serverUrl = "https://ws-pokemon.onrender.com"; // Replace with actual server URL
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
+  useEffect(() => {
+    const socket = new WebSocket(serverUrl);
+    setWs(socket);
+
+    socket.onopen = () => {
+      console.log("Connected to WebSocket server");
+    };
+
+    socket.onmessage = (event) => {
+      console.log("Message from server:", event.data);
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, []);
+
+  const sendCommand = (command: string) => {
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ action: command }));
+      setLastCommand(command);
+    }
+  };
+
+  return (
+    <Box asChild p="2">
+      <main>
+        <Heading>Twitch Plays Pokémon</Heading>
+        <Text>
+          Last command: <span>{lastCommand}</span>
+        </Text>
+        <Flex gap="2">
+          <Grid columns="3" gap="2">
+            <Box />
+            <Button onClick={() => sendCommand("UP")}>UP</Button>
+            <Box />
+            <Button onClick={() => sendCommand("LEFT")}>LEFT</Button>
+            <Box />
+            <Button onClick={() => sendCommand("RIGHT")}>RIGHT</Button>
+            <Box />
+            <Button onClick={() => sendCommand("DOWN")}>DOWN</Button>
+          </Grid>
+          <Flex gap="2" direction="column">
+            <Flex gap="2">
+              <Button onClick={() => sendCommand("A")}>A</Button>
+              <Button onClick={() => sendCommand("B")}>B</Button>
+            </Flex>
+            <Button onClick={() => sendCommand("START")}>START</Button>
+          </Flex>
+        </Flex>
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    </Box>
   );
 }
