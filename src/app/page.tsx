@@ -6,7 +6,7 @@ import { Box, Button, Flex, Grid, Heading, Text } from "@radix-ui/themes";
 export default function Home() {
   const [ws, setWs] = useState<WebSocket | null>(null);
   const [lastCommand, setLastCommand] = useState("None");
-  const serverUrl = "https://ws-pokemon.onrender.com"; // Replace with actual server URL
+  const serverUrl = "https://ws-pokemon.onrender.com/ws";
 
   useEffect(() => {
     const socket = new WebSocket(serverUrl);
